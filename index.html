@@ -1,16 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-  
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SONIQ — Advanced Audio Studio</title>
+
+  <!--
+    IMPORTANT: sw.js must be the VERY FIRST script.
+    It registers a service worker that adds Cross-Origin-Opener-Policy and
+    Cross-Origin-Embedder-Policy headers, enabling SharedArrayBuffer for FFmpeg.wasm.
+    This makes the site work on GitHub Pages and other static hosts.
+  -->
+  <script src="./sw.js"></script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
-  
 <body>
 
   <!-- PROCESSING OVERLAY -->
@@ -18,8 +25,8 @@
     <div class="processing-card">
       <div class="processing-spinner">
         <svg viewBox="0 0 50 50" class="spinner-svg">
-          <circle cx="25" cy="25" r="20" fill="none" stroke-width="3" class="spinner-track" />
-          <circle cx="25" cy="25" r="20" fill="none" stroke-width="3" class="spinner-fill" />
+          <circle cx="25" cy="25" r="20" fill="none" stroke-width="2.5" class="spinner-track" />
+          <circle cx="25" cy="25" r="20" fill="none" stroke-width="2.5" class="spinner-fill" />
         </svg>
       </div>
       <div class="processing-label" id="processingLabel">Processing audio...</div>
@@ -31,19 +38,19 @@
   </div>
 
   <!-- HEADER -->
-  <header class="header">
+  <header class="header" id="siteHeader">
     <div class="header-left">
       <div class="logo">
         <div class="logo-icon">
-          <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="28" height="28" rx="8" fill="#DC2626"/>
-            <path d="M7 14 Q10 8 14 14 Q18 20 21 14" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-            <circle cx="14" cy="14" r="2" fill="white"/>
+          <svg viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="30" height="30" rx="8" fill="#DC2626"/>
+            <path d="M6 15 Q9.5 8 15 15 Q20.5 22 24 15" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+            <circle cx="15" cy="15" r="2.2" fill="white"/>
           </svg>
         </div>
         <div class="logo-text">
           <span class="logo-name">SONIQ</span>
-          <span class="logo-tag">STUDIO</span>
+          <span class="logo-tag">Audio Studio</span>
         </div>
       </div>
     </div>
@@ -70,7 +77,7 @@
           <i data-lucide="upload-cloud"></i>
         </div>
         <div class="drop-text">Drop audio files here</div>
-        <div class="drop-sub">or click to browse — MP3, WAV, OGG, FLAC, AAC, M4A supported</div>
+        <div class="drop-sub">MP3 · WAV · OGG · FLAC · AAC · M4A · AIFF · Opus — all formats supported</div>
         <button class="btn-outline" id="browseBtn">
           <i data-lucide="folder-open"></i>
           Browse Files
@@ -108,19 +115,9 @@
         </div>
       </div>
 
-      <!-- Waveform Canvas Area -->
       <div class="waveform-wrap">
         <div id="waveform"></div>
         <div class="waveform-ruler" id="waveformRuler"></div>
-        <div class="trim-overlay hidden" id="trimOverlay">
-          <div class="trim-handle trim-handle-left" id="trimLeft">
-            <i data-lucide="grip-vertical"></i>
-          </div>
-          <div class="trim-region" id="trimRegion"></div>
-          <div class="trim-handle trim-handle-right" id="trimRight">
-            <i data-lucide="grip-vertical"></i>
-          </div>
-        </div>
       </div>
 
       <!-- Spectrum Analyzer -->
@@ -130,16 +127,16 @@
 
       <!-- Transport Controls -->
       <div class="transport">
-        <button class="transport-btn" id="restartBtn" title="Restart">
+        <button class="transport-btn" id="restartBtn" title="Restart (Home)">
           <i data-lucide="skip-back"></i>
         </button>
-        <button class="transport-btn" id="rewind5Btn" title="Rewind 5s">
+        <button class="transport-btn" id="rewind5Btn" title="Rewind 5s (←)">
           <i data-lucide="rewind"></i>
         </button>
-        <button class="transport-btn transport-play" id="playBtn" title="Play / Pause">
+        <button class="transport-btn transport-play" id="playBtn" title="Play / Pause (Space)">
           <i data-lucide="play" id="playIcon"></i>
         </button>
-        <button class="transport-btn" id="fastforward5Btn" title="Forward 5s">
+        <button class="transport-btn" id="fastforward5Btn" title="Forward 5s (→)">
           <i data-lucide="fast-forward"></i>
         </button>
         <button class="transport-btn" id="stopBtn" title="Stop">
@@ -149,23 +146,23 @@
         <button class="transport-btn transport-toggle" id="loopBtn" title="Loop">
           <i data-lucide="repeat"></i>
         </button>
-        <button class="transport-btn transport-toggle" id="muteBtn" title="Mute">
+        <button class="transport-btn transport-toggle" id="muteBtn" title="Mute (M)">
           <i data-lucide="volume-2" id="muteIcon"></i>
         </button>
         <div class="transport-sep"></div>
         <div class="transport-zoom">
-          <button class="transport-btn btn-xs" id="zoomOutBtn" title="Zoom Out">
+          <button class="transport-btn btn-xs" id="zoomOutBtn" title="Zoom Out (-)">
             <i data-lucide="zoom-out"></i>
           </button>
           <span class="zoom-label" id="zoomLabel">1x</span>
-          <button class="transport-btn btn-xs" id="zoomInBtn" title="Zoom In">
+          <button class="transport-btn btn-xs" id="zoomInBtn" title="Zoom In (+)">
             <i data-lucide="zoom-in"></i>
           </button>
         </div>
       </div>
     </section>
 
-    <!-- PROCESSOR + PRESETS PANELS ROW -->
+    <!-- PROCESSOR + PRESETS ROW -->
     <div class="panels-row hidden" id="panelsRow">
 
       <!-- AUDIO PROCESSOR -->
@@ -178,74 +175,83 @@
           <div class="panel-badge">FFmpeg Engine</div>
         </div>
 
-        <!-- Knobs Row -->
+        <!-- Knobs -->
         <div class="knobs-row">
           <div class="knob-group">
-            <div class="knob-label">SPEED</div>
-            <canvas class="knob" id="speedKnob" width="80" height="80" data-min="0.25" data-max="4" data-value="1" data-step="0.01"></canvas>
+            <div class="knob-label">Speed</div>
+            <canvas class="knob" id="speedKnob" width="80" height="80"
+              data-min="0.25" data-max="4" data-value="1" data-step="0.01"></canvas>
             <div class="knob-value" id="speedKnobVal">1.00x</div>
           </div>
           <div class="knob-group">
-            <div class="knob-label">PITCH</div>
-            <canvas class="knob" id="pitchKnob" width="80" height="80" data-min="-24" data-max="24" data-value="0" data-step="0.5"></canvas>
+            <div class="knob-label">Pitch</div>
+            <canvas class="knob" id="pitchKnob" width="80" height="80"
+              data-min="-24" data-max="24" data-value="0" data-step="0.5"></canvas>
             <div class="knob-value" id="pitchKnobVal">0 st</div>
           </div>
           <div class="knob-group">
-            <div class="knob-label">VOLUME</div>
-            <canvas class="knob" id="volumeKnob" width="80" height="80" data-min="0" data-max="300" data-value="100" data-step="1"></canvas>
+            <div class="knob-label">Volume</div>
+            <canvas class="knob" id="volumeKnob" width="80" height="80"
+              data-min="0" data-max="300" data-value="100" data-step="1"></canvas>
             <div class="knob-value" id="volumeKnobVal">100%</div>
           </div>
+        </div>
+
+        <!-- Volume quality warning (shown when volume > 100%) -->
+        <div class="vol-warning hidden" id="volWarning">
+          <i data-lucide="alert-triangle"></i>
+          Volume above 100% — hard limiter active to prevent clipping. Quality is preserved.
         </div>
 
         <!-- Sliders -->
         <div class="sliders-section">
           <div class="slider-row">
-            <span class="slider-label">SPEED (TEMPO)</span>
-            <span class="slider-val" id="speedSliderVal">1.00x</span>
+            <span class="slider-label">Speed</span>
             <div class="slider-wrap">
               <input type="range" class="styled-slider" id="speedSlider" min="0.25" max="4" step="0.01" value="1" />
             </div>
+            <span class="slider-val" id="speedSliderVal">1.00x</span>
           </div>
           <div class="slider-row">
-            <span class="slider-label">PITCH (SEMITONES)</span>
-            <span class="slider-val" id="pitchSliderVal">0 st</span>
+            <span class="slider-label">Pitch</span>
             <div class="slider-wrap">
               <input type="range" class="styled-slider" id="pitchSlider" min="-24" max="24" step="0.5" value="0" />
             </div>
+            <span class="slider-val" id="pitchSliderVal">0 st</span>
           </div>
           <div class="slider-row">
-            <span class="slider-label">VOLUME</span>
-            <span class="slider-val" id="volumeSliderVal">100%</span>
+            <span class="slider-label">Volume</span>
             <div class="slider-wrap">
               <input type="range" class="styled-slider" id="volumeSlider" min="0" max="300" step="1" value="100" />
             </div>
+            <span class="slider-val" id="volumeSliderVal">100%</span>
           </div>
           <div class="slider-row">
-            <span class="slider-label">BASS</span>
-            <span class="slider-val" id="bassSliderVal">0 dB</span>
+            <span class="slider-label">Bass</span>
             <div class="slider-wrap">
               <input type="range" class="styled-slider slider-eq" id="bassSlider" min="-20" max="20" step="0.5" value="0" />
             </div>
+            <span class="slider-val" id="bassSliderVal">0 dB</span>
           </div>
           <div class="slider-row">
-            <span class="slider-label">MID</span>
-            <span class="slider-val" id="midSliderVal">0 dB</span>
+            <span class="slider-label">Mid</span>
             <div class="slider-wrap">
               <input type="range" class="styled-slider slider-eq" id="midSlider" min="-20" max="20" step="0.5" value="0" />
             </div>
+            <span class="slider-val" id="midSliderVal">0 dB</span>
           </div>
           <div class="slider-row">
-            <span class="slider-label">TREBLE</span>
-            <span class="slider-val" id="trebleSliderVal">0 dB</span>
+            <span class="slider-label">Treble</span>
             <div class="slider-wrap">
               <input type="range" class="styled-slider slider-eq" id="trebleSlider" min="-20" max="20" step="0.5" value="0" />
             </div>
+            <span class="slider-val" id="trebleSliderVal">0 dB</span>
           </div>
         </div>
 
         <div class="processor-note">
           <i data-lucide="info"></i>
-          Speed &amp; pitch processed independently via FFmpeg (atempo + asetrate). Preview is approximate.
+          Speed &amp; pitch are processed independently (atempo + asetrate). Preview reflects speed + volume only — all effects are applied precisely at export.
         </div>
       </section>
 
@@ -260,14 +266,14 @@
               Presets
             </div>
           </div>
-          <div class="presets-grid" id="presetsGrid">
+          <div class="presets-grid">
             <button class="preset-btn" data-speed="1.25" data-pitch="2" data-volume="100" data-reverb="0" data-echo="0">
               <span class="preset-name">Nightcore</span>
               <span class="preset-desc">1.25x / +2st</span>
             </button>
             <button class="preset-btn" data-speed="0.8" data-pitch="-2" data-volume="100" data-reverb="1" data-echo="0">
               <span class="preset-name">Slowed + Reverb</span>
-              <span class="preset-desc">0.8x / -2st / reverb</span>
+              <span class="preset-desc">0.8x / −2st / reverb</span>
             </button>
             <button class="preset-btn" data-speed="1" data-pitch="7" data-volume="100" data-reverb="0" data-echo="0">
               <span class="preset-name">Chipmunk</span>
@@ -275,11 +281,11 @@
             </button>
             <button class="preset-btn" data-speed="1" data-pitch="-5" data-volume="110" data-reverb="0" data-echo="0">
               <span class="preset-name">Deep</span>
-              <span class="preset-desc">1x / -5st</span>
+              <span class="preset-desc">1x / −5st</span>
             </button>
             <button class="preset-btn" data-speed="0.7" data-pitch="-3" data-volume="100" data-reverb="1" data-echo="1">
               <span class="preset-name">Vaporwave</span>
-              <span class="preset-desc">0.7x / -3st / fx</span>
+              <span class="preset-desc">0.7x / −3st / fx</span>
             </button>
             <button class="preset-btn" data-speed="1.3" data-pitch="0" data-volume="100" data-reverb="0" data-echo="0">
               <span class="preset-name">Hard Techno</span>
@@ -287,10 +293,10 @@
             </button>
             <button class="preset-btn" data-speed="0.85" data-pitch="-1" data-volume="100" data-reverb="1" data-echo="1">
               <span class="preset-name">Lofi</span>
-              <span class="preset-desc">0.85x / -1st / reverb</span>
+              <span class="preset-desc">0.85x / −1st / reverb</span>
             </button>
             <button class="preset-btn preset-reset" data-speed="1" data-pitch="0" data-volume="100" data-reverb="0" data-echo="0">
-              <span class="preset-name">Reset</span>
+              <span class="preset-name">Reset All</span>
               <span class="preset-desc">1x / 0st / 100%</span>
             </button>
           </div>
@@ -305,11 +311,12 @@
             </div>
           </div>
           <div class="effects-grid">
+
             <div class="effect-item">
               <div class="effect-toggle-row">
                 <div class="effect-info">
                   <span class="effect-name">Reverb</span>
-                  <span class="effect-desc">Space &amp; depth</span>
+                  <span class="effect-desc">Spatial depth &amp; decay</span>
                 </div>
                 <label class="toggle-switch">
                   <input type="checkbox" id="reverbToggle" />
@@ -344,7 +351,7 @@
             <div class="effect-item effect-item-row">
               <div class="effect-info">
                 <span class="effect-name">Normalize</span>
-                <span class="effect-desc">Peak-level normalize</span>
+                <span class="effect-desc">Dynamic peak normalization</span>
               </div>
               <label class="toggle-switch">
                 <input type="checkbox" id="normalizeToggle" />
@@ -356,7 +363,7 @@
               <div class="effect-toggle-row">
                 <div class="effect-info">
                   <span class="effect-name">Fade In</span>
-                  <span class="effect-desc">Gradual open</span>
+                  <span class="effect-desc">Gradual volume open</span>
                 </div>
                 <label class="toggle-switch">
                   <input type="checkbox" id="fadeInToggle" />
@@ -374,7 +381,7 @@
               <div class="effect-toggle-row">
                 <div class="effect-info">
                   <span class="effect-name">Fade Out</span>
-                  <span class="effect-desc">Gradual close</span>
+                  <span class="effect-desc">Gradual volume close</span>
                 </div>
                 <label class="toggle-switch">
                   <input type="checkbox" id="fadeOutToggle" />
@@ -391,13 +398,14 @@
             <div class="effect-item effect-item-row">
               <div class="effect-info">
                 <span class="effect-name">Stereo to Mono</span>
-                <span class="effect-desc">Mix channels to mono</span>
+                <span class="effect-desc">Mix channels together</span>
               </div>
               <label class="toggle-switch">
                 <input type="checkbox" id="monoToggle" />
                 <span class="toggle-track"></span>
               </label>
             </div>
+
           </div>
         </section>
 
@@ -436,21 +444,21 @@
             </div>
           </div>
           <div class="trim-duration">
-            <label class="trim-field-label">Duration</label>
+            <label class="trim-field-label">Selection</label>
             <span class="trim-dur-val" id="trimDurVal">—</span>
           </div>
-          <button class="btn-ghost btn-sm" id="trimSetPlayhead" title="Set trim to current playhead">
+          <button class="btn-ghost btn-sm" id="trimSetPlayhead" title="Set trim start to playhead position">
             <i data-lucide="crosshair"></i>
-            Use Playhead
+            Set to Playhead
           </button>
-          <button class="btn-ghost btn-sm" id="trimSetAll" title="Select all">
+          <button class="btn-ghost btn-sm" id="trimSetAll" title="Select full track">
             <i data-lucide="maximize-2"></i>
             Select All
           </button>
         </div>
         <p class="trim-note">
           <i data-lucide="info"></i>
-          Trim is applied during export via FFmpeg — the original file is never modified.
+          Trim is applied during export only — your original file is never modified.
         </p>
       </div>
     </section>
@@ -459,8 +467,8 @@
     <section class="panel panel-export hidden" id="exportSection">
       <div class="panel-header">
         <div class="panel-title">
-          <i data-lucide="download"></i>
-          Export
+          <i data-lucide="download-cloud"></i>
+          Export &amp; Download
         </div>
         <div class="panel-badge">FFmpeg Processing</div>
       </div>
@@ -480,13 +488,12 @@
         </button>
         <button class="format-btn" data-format="flac">
           <span class="format-name">FLAC</span>
-          <span class="format-desc">Lossless Compressed</span>
+          <span class="format-desc">Lossless + Compressed</span>
         </button>
       </div>
 
-      <!-- Quality options per format -->
       <div class="quality-row" id="mp3Quality">
-        <span class="quality-label">MP3 Bitrate</span>
+        <span class="quality-label">Bitrate</span>
         <div class="quality-options">
           <button class="quality-btn" data-quality="128k">128 kbps</button>
           <button class="quality-btn active" data-quality="192k">192 kbps</button>
@@ -495,15 +502,15 @@
         </div>
       </div>
       <div class="quality-row hidden" id="oggQuality">
-        <span class="quality-label">OGG Quality</span>
+        <span class="quality-label">Quality</span>
         <div class="quality-options">
-          <button class="quality-btn" data-quality="3">Q3 — Low</button>
-          <button class="quality-btn active" data-quality="6">Q6 — Medium</button>
-          <button class="quality-btn" data-quality="9">Q9 — High</button>
+          <button class="quality-btn" data-quality="3">Q3 Low</button>
+          <button class="quality-btn active" data-quality="6">Q6 Medium</button>
+          <button class="quality-btn" data-quality="9">Q9 High</button>
         </div>
       </div>
       <div class="quality-row hidden" id="wavQuality">
-        <span class="quality-label">WAV Bit Depth</span>
+        <span class="quality-label">Bit Depth</span>
         <div class="quality-options">
           <button class="quality-btn active" data-quality="pcm_s16le">16-bit</button>
           <button class="quality-btn" data-quality="pcm_s24le">24-bit</button>
@@ -511,48 +518,48 @@
         </div>
       </div>
       <div class="quality-row hidden" id="flacQuality">
-        <span class="quality-label">FLAC Compression</span>
+        <span class="quality-label">Compression</span>
         <div class="quality-options">
-          <button class="quality-btn" data-quality="0">0 — Fast</button>
-          <button class="quality-btn active" data-quality="5">5 — Balanced</button>
-          <button class="quality-btn" data-quality="8">8 — Best</button>
+          <button class="quality-btn" data-quality="0">Level 0 Fast</button>
+          <button class="quality-btn active" data-quality="5">Level 5 Balanced</button>
+          <button class="quality-btn" data-quality="8">Level 8 Best</button>
         </div>
       </div>
 
       <button class="btn-export" id="exportBtn">
-        <i data-lucide="download-cloud"></i>
+        <i data-lucide="download"></i>
         Export &amp; Download
       </button>
 
       <div class="export-info" id="exportInfo">
-        <span id="exportInfoText">—</span>
+        <span id="exportInfoText">Configure settings above, then export</span>
       </div>
     </section>
 
     <!-- INFO BAR -->
     <section class="info-bar hidden" id="infoBar">
       <div class="info-tile">
-        <span class="info-tile-label">SAMPLE RATE</span>
+        <span class="info-tile-label">Sample Rate</span>
         <span class="info-tile-val" id="infoSampleRate">—</span>
       </div>
       <div class="info-tile">
-        <span class="info-tile-label">CHANNELS</span>
+        <span class="info-tile-label">Channels</span>
         <span class="info-tile-val" id="infoChannels">—</span>
       </div>
       <div class="info-tile">
-        <span class="info-tile-label">ORIGINAL</span>
+        <span class="info-tile-label">Original</span>
         <span class="info-tile-val" id="infoOrigDuration">—</span>
       </div>
       <div class="info-tile">
-        <span class="info-tile-label">PROCESSED</span>
+        <span class="info-tile-label">Processed</span>
         <span class="info-tile-val" id="infoProcDuration">—</span>
       </div>
       <div class="info-tile">
-        <span class="info-tile-label">FILE SIZE</span>
+        <span class="info-tile-label">File Size</span>
         <span class="info-tile-val" id="infoFileSize">—</span>
       </div>
       <div class="info-tile">
-        <span class="info-tile-label">FORMAT</span>
+        <span class="info-tile-label">Format</span>
         <span class="info-tile-val" id="infoFormat">—</span>
       </div>
     </section>
@@ -563,12 +570,12 @@
   <footer class="footer">
     <span>SONIQ STUDIO</span>
     <span class="footer-sep">·</span>
-    <span>Advanced Audio Processing via FFmpeg WebAssembly</span>
+    <span>FFmpeg WebAssembly — Client-Side Processing</span>
     <span class="footer-sep">·</span>
-    <span>All processing is local — no data is uploaded</span>
+    <span>No data is ever uploaded</span>
   </footer>
 
-  <!-- SCRIPTS -->
+  <!-- THIRD PARTY SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
   <script src="https://unpkg.com/lucide@0.454.0/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.min.js"></script>
