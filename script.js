@@ -466,8 +466,14 @@
       }
     }
 
+    let scrollTimeout;
     if (soundList) {
       soundList.addEventListener('scroll', () => {
+        if (libraryScrollbarThumb) libraryScrollbarThumb.classList.add('scrolling');
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+          if (libraryScrollbarThumb) libraryScrollbarThumb.classList.remove('scrolling');
+        }, 150);
         requestAnimationFrame(updateScrollbar);
       }, { passive: true });
       

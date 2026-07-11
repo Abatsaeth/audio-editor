@@ -867,7 +867,12 @@ code   { font-family: var(--font-mono); font-size: 0.86em; padding: 1px 6px; bac
   background: var(--hairline-2);
   border-radius: 4px;
   min-height: 20px;
-  transition: background var(--d-fast) var(--ease-out);
+  transition: background var(--d-fast) var(--ease-out), height var(--d-fast) var(--ease-out), transform var(--d-fast) var(--ease-out);
+}
+
+.custom-scrollbar-thumb.scrolling,
+.custom-scrollbar-thumb.dragging {
+  transition: background var(--d-fast) var(--ease-out), height var(--d-fast) var(--ease-out);
 }
 
 .custom-scrollbar-thumb:hover, .custom-scrollbar-thumb.dragging {
