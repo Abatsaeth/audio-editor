@@ -168,16 +168,34 @@
   });
   const escapeHTML = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-  function checkMarquee(wrapEl, innerEl) {
-    if (!wrapEl || !innerEl) return;
-    innerEl.style.transform = '';
-    const overflow = innerEl.scrollWidth - wrapEl.clientWidth;
-    if (overflow > 4) {
-      wrapEl.classList.add('long');
-      innerEl.style.setProperty('--marquee-shift', `-${overflow + 8}px`);
-    } else {
-      wrapEl.classList.remove('long');
+  function checkMarqueeBatch(pairs) {
+    // Clear transforms first (Write)
+    for (const p of pairs) {
+      if (p.wrapEl && p.innerEl) p.innerEl.style.transform = '';
     }
+    // Measure (Read)
+    const measurements = [];
+    for (const p of pairs) {
+      if (!p.wrapEl || !p.innerEl) continue;
+      measurements.push({
+        wrap: p.wrapEl,
+        inner: p.innerEl,
+        overflow: p.innerEl.scrollWidth - p.wrapEl.clientWidth
+      });
+    }
+    // Apply classes (Write)
+    for (const m of measurements) {
+      if (m.overflow > 4) {
+        m.wrap.classList.add('long');
+        m.inner.style.setProperty('--marquee-shift', `-${m.overflow + 8}px`);
+      } else {
+        m.wrap.classList.remove('long');
+      }
+    }
+  }
+
+  function checkMarquee(wrapEl, innerEl) {
+    checkMarqueeBatch([{ wrapEl, innerEl }]);
   }
 
   // -------- FLIP helpers --------
@@ -655,25 +673,34 @@
       const filteredSounds = q ? sounds.filter(s => s.name.toLowerCase().includes(q)) : sounds;
 
       if (soundList) {
-        soundList.innerHTML = '';
+        const frag = document.createDocumentFragment();
         for (const s of filteredSounds) {
           const el = buildSidebarCard(s);
           if (newIds.includes(s.id)) {
             el.classList.add('entering');
             el.addEventListener('animationend', () => el.classList.remove('entering'), { once: true });
           }
-          soundList.appendChild(el);
+          frag.appendChild(el);
         }
+        soundList.innerHTML = '';
+        soundList.appendChild(frag);
         requestAnimationFrame(() => {
+          const pairs = [];
           $$('.sound-card', soundList).forEach(el => {
-            checkMarquee(el.querySelector('.sound-name-wrap'), el.querySelector('.sound-name'));
+            pairs.push({
+              wrapEl: el.querySelector('.sound-name-wrap'),
+              innerEl: el.querySelector('.sound-name')
+            });
           });
+          checkMarqueeBatch(pairs);
           updateScrollbar();
         });
       }
       if (railSounds) {
+        const railFrag = document.createDocumentFragment();
+        for (const s of sounds) railFrag.appendChild(buildRailItem(s));
         railSounds.innerHTML = '';
-        for (const s of sounds) railSounds.appendChild(buildRailItem(s));
+        railSounds.appendChild(railFrag);
       }
 
       if (libraryCount) tweenNumber(libraryCount, filteredSounds.length);
@@ -1135,10 +1162,9 @@
         lastPct = pct;
         const p = Math.max(0, Math.min(1, pct));
         fill.style.transform = `translateY(-50%) scaleX(${p})`;
-        thumb.style.left = `${p * 100}%`;
-        label.style.left = `${p * 100}%`;
-        thumb.style.transform = '';
-        label.style.transform = '';
+        const tx = p * trackWidth;
+        thumb.style.transform = `translate3d(calc(${tx}px - 50%), -50%, 0)`;
+        label.style.transform = `translate3d(calc(${tx}px - 50%), -50%, 0)`;
       }
 
       function smartHide(pct) {
@@ -1324,17 +1350,28 @@
 
       const ANIM_MS = 310;
       setTimeout(() => {
-        soundList.innerHTML = '';
-        for (const s of sounds) soundList.appendChild(buildSidebarCard(s));
-        requestAnimationFrame(() => {
-          $$('.sound-card', soundList).forEach(el => {
-            checkMarquee(el.querySelector('.sound-name-wrap'), el.querySelector('.sound-name'));
+        if (soundList) {
+          const frag = document.createDocumentFragment();
+          for (const s of sounds) frag.appendChild(buildSidebarCard(s));
+          soundList.innerHTML = '';
+          soundList.appendChild(frag);
+          requestAnimationFrame(() => {
+            const pairs = [];
+            $$('.sound-card', soundList).forEach(el => {
+              pairs.push({
+                wrapEl: el.querySelector('.sound-name-wrap'),
+                innerEl: el.querySelector('.sound-name')
+              });
+            });
+            checkMarqueeBatch(pairs);
+            updateScrollbar();
           });
-          updateScrollbar();
-        });
+        }
         if (railSounds) {
+          const railFrag = document.createDocumentFragment();
+          for (const s of sounds) railFrag.appendChild(buildRailItem(s));
           railSounds.innerHTML = '';
-          for (const s of sounds) railSounds.appendChild(buildRailItem(s));
+          railSounds.appendChild(railFrag);
         }
 
         const count = sounds.length;
@@ -1509,7 +1546,17 @@
           const railEl = railSounds.querySelector(`.rail-sound[data-id="${s.id}"]`);
           if (railEl) railEl.dataset.tip = next;
         }
-        if (s.id === activeId) updateTopbarInfo(s);
+        if (s.id === activeId) {
+          if (topbarNameInner && topbarNameInner.textContent !== next) {
+            topbarNameInner.classList.add('swapping');
+            setTimeout(() => {
+              updateTopbarInfo(s);
+              topbarNameInner.classList.remove('swapping');
+            }, 180);
+          } else {
+            updateTopbarInfo(s);
+          }
+        }
         showToast(`Renamed — ${oldName} → ${next}`, 'success');
       }
       closeEditModal();
@@ -1611,34 +1658,61 @@
       if (tipTarget === t) hideTip();
     });
     window.addEventListener('scroll', hideTip, { passive: true });
+    
+    let resizeDebounce;
     window.addEventListener('resize', () => {
       hideTip();
-      requestAnimationFrame(() => {
-        if (soundList) {
-          $$('.sound-card', soundList).forEach(el => {
-            checkMarquee(el.querySelector('.sound-name-wrap'), el.querySelector('.sound-name'));
-          });
-        }
-        checkMarquee(topbarName, topbarNameInner);
-      });
+      clearTimeout(resizeDebounce);
+      resizeDebounce = setTimeout(() => {
+        requestAnimationFrame(() => {
+          if (soundList) {
+            const pairs = [];
+            $$('.sound-card', soundList).forEach(el => {
+              pairs.push({
+                wrapEl: el.querySelector('.sound-name-wrap'),
+                innerEl: el.querySelector('.sound-name')
+              });
+            });
+            checkMarqueeBatch(pairs);
+          }
+          checkMarquee(topbarName, topbarNameInner);
+        });
+      }, 150);
     });
 
     const cursorWrap = $('#cursorWrap');
     if (cursorWrap) {
       let cursorVisible = false;
+      let cursorX = 0, cursorY = 0;
+      let cursorRaf = null;
+
       document.addEventListener('mousemove', (e) => {
         if (!cursorVisible) {
           cursorWrap.style.opacity = '1';
           cursorVisible = true;
         }
-        cursorWrap.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+        cursorX = e.clientX;
+        cursorY = e.clientY;
+        if (!cursorRaf) {
+          cursorRaf = requestAnimationFrame(() => {
+            cursorWrap.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0)`;
+            cursorRaf = null;
+          });
+        }
       });
       document.addEventListener('dragover', (e) => {
         if (!cursorVisible) {
           cursorWrap.style.opacity = '1';
           cursorVisible = true;
         }
-        cursorWrap.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+        cursorX = e.clientX;
+        cursorY = e.clientY;
+        if (!cursorRaf) {
+          cursorRaf = requestAnimationFrame(() => {
+            cursorWrap.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0)`;
+            cursorRaf = null;
+          });
+        }
       });
       document.addEventListener('drag', (e) => {
         if (e.clientX === 0 && e.clientY === 0) return;
@@ -1646,7 +1720,14 @@
           cursorWrap.style.opacity = '1';
           cursorVisible = true;
         }
-        cursorWrap.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+        cursorX = e.clientX;
+        cursorY = e.clientY;
+        if (!cursorRaf) {
+          cursorRaf = requestAnimationFrame(() => {
+            cursorWrap.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0)`;
+            cursorRaf = null;
+          });
+        }
       });
       document.addEventListener('mouseover', (e) => {
         if (document.body.getAttribute('data-cursor') === 'grabbing') return;
