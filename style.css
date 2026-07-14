@@ -826,7 +826,7 @@ code   { font-family: var(--font-mono); font-size: 0.86em; padding: 1px 6px; bac
 .sound-list {
   flex: 1;
   overflow: visible auto;
-  padding: 32px 14px 14px;
+  padding: 14px 14px 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1338,7 +1338,7 @@ body.has-player .brand { opacity: 0.35; }
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   padding: 0 18px;
   height: 100%;
   background: linear-gradient(180deg, rgb(20 20 26 / 72%), rgb(14 14 18 / 66%));
@@ -1369,9 +1369,9 @@ body.has-player .brand { opacity: 0.35; }
   display: inline-block;
   white-space: nowrap;
   font-family: var(--font-display);
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 600;
-  letter-spacing: -0.005em;
+  letter-spacing: 0em;
   color: var(--text);
   transition: opacity 180ms var(--ease-soft), transform 180ms var(--ease-out);
   transform-origin: left center;
@@ -1392,7 +1392,7 @@ body.has-player .brand { opacity: 0.35; }
 .topbar-sep {
   width: 1px;
   height: 20px;
-  margin: 0 4px;
+  margin: 0 2px;
   background: var(--hairline-2);
   flex-shrink: 0;
 }
@@ -1918,5 +1918,5 @@ body.has-player .toast-container {
   .brand { left: calc(var(--rail-w) + 32px); }
   .pc-btn { width: 34px; height: 34px; }
   .pc-play { width: 42px; height: 42px; }
-  .topbar-name { max-width: 180px; }
+  .topbar-name { max-width: 320px; }
 }
