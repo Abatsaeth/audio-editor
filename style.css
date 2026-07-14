@@ -1374,7 +1374,7 @@ body.has-player .brand { opacity: 0.35; }
   letter-spacing: 0.04em;
   color: var(--text);
   transition: opacity 180ms var(--ease-soft), transform 180ms var(--ease-out);
-  transform-origin: left center;
+  transform-origin: center;
 }
 .topbar-name-inner.swapping { opacity: 0; transform: translateY(-4px); }
 
