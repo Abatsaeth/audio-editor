@@ -60,12 +60,17 @@
 
   // -------- Icons (inline SVG, no emojis, no external requests) --------
   const ICONS = {
+    help: `
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`,
     check: `
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>`,
     copy: `
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
         <rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>`,
@@ -1810,23 +1815,23 @@
       const bitrate = s.duration ? Math.round((s.size * 8) / s.duration / 1000) + ' kbps' : 'Unknown';
       
       const fields = [
-        { label: 'Name', icon: ICONS.infoTitle, val: s.name },
-        { label: 'Format', icon: ICONS.infoType, val: s.format },
-        { label: 'MIME Type', icon: ICONS.infoMime, val: mimeType },
-        { label: 'Size', icon: ICONS.infoSize, val: `${fmtMB(s.size)} (${exactBytes})` },
-        { label: 'Duration', icon: ICONS.infoClock, val: `${fmtDuration(s.duration)} (${s.duration.toFixed(3)}s)` },
-        { label: 'Bitrate', icon: ICONS.infoBitrate, val: bitrate },
-        { label: 'Added', icon: ICONS.infoCalendar, val: dateStr },
-        { label: 'Downloaded', icon: ICONS.infoDownload, val: modifiedStr }
+        { label: 'Name', icon: ICONS.infoTitle, val: s.name, help: 'The base filename of the audio track.' },
+        { label: 'Format', icon: ICONS.infoType, val: s.format, help: 'The container format or file extension.' },
+        { label: 'MIME Type', icon: ICONS.infoMime, val: mimeType, help: 'The standard MIME type of the audio file.' },
+        { label: 'Size', icon: ICONS.infoSize, val: `${fmtMB(s.size)} (${exactBytes})`, help: 'The total storage size of the file.' },
+        { label: 'Duration', icon: ICONS.infoClock, val: `${fmtDuration(s.duration)} (${s.duration.toFixed(3)}s)`, help: 'The total playback length of the audio.' },
+        { label: 'Bitrate', icon: ICONS.infoBitrate, val: bitrate, help: 'The amount of data processed per second.' },
+        { label: 'Added', icon: ICONS.infoCalendar, val: dateStr, help: 'When this file was imported into the application.' },
+        { label: 'Downloaded', icon: ICONS.infoDownload, val: modifiedStr, help: 'When the file was last modified or created.' }
       ];
 
       if (s.advMeta === 'loading') {
         fields.push(
-          { label: 'Sample Rate', icon: ICONS.infoSampleRate, val: 'Analyzing...' },
-          { label: 'Channels', icon: ICONS.infoSliders, val: 'Analyzing...' },
-          { label: 'Total Samples', icon: ICONS.infoDatabase, val: 'Analyzing...' },
-          { label: 'Peak Level', icon: ICONS.infoPeakLevel, val: 'Analyzing...' },
-          { label: 'RMS Loudness', icon: ICONS.infoLoudness, val: 'Analyzing...' }
+          { label: 'Sample Rate', icon: ICONS.infoSampleRate, val: 'Analyzing...', help: 'The number of audio samples carried per second.' },
+          { label: 'Channels', icon: ICONS.infoSliders, val: 'Analyzing...', help: 'The number of independent audio channels (e.g., Mono, Stereo).' },
+          { label: 'Total Samples', icon: ICONS.infoDatabase, val: 'Analyzing...', help: 'The total number of individual audio samples in the file.' },
+          { label: 'Peak Level', icon: ICONS.infoPeakLevel, val: 'Analyzing...', help: 'The highest amplitude level reached in the audio signal.' },
+          { label: 'RMS Loudness', icon: ICONS.infoLoudness, val: 'Analyzing...', help: 'The root mean square, indicating the average perceived loudness.' }
         );
       } else if (s.advMeta && s.advMeta !== 'error') {
         const sr = new Intl.NumberFormat().format(s.advMeta.sampleRate) + ' Hz';
@@ -1835,14 +1840,14 @@
         const pk = s.advMeta.peakDB === -Infinity ? '-∞ dB' : `${s.advMeta.peakDB.toFixed(2)} dB`;
         const rms = s.advMeta.rmsDB === -Infinity ? '-∞ dB' : `${s.advMeta.rmsDB.toFixed(2)} dB`;
         fields.push(
-          { label: 'Sample Rate', icon: ICONS.infoSampleRate, val: sr },
-          { label: 'Channels', icon: ICONS.infoSliders, val: ch },
-          { label: 'Total Samples', icon: ICONS.infoDatabase, val: smp },
-          { label: 'Peak Level', icon: ICONS.infoPeakLevel, val: pk },
-          { label: 'RMS Loudness', icon: ICONS.infoLoudness, val: rms }
+          { label: 'Sample Rate', icon: ICONS.infoSampleRate, val: sr, help: 'The number of audio samples carried per second.' },
+          { label: 'Channels', icon: ICONS.infoSliders, val: ch, help: 'The number of independent audio channels (e.g., Mono, Stereo).' },
+          { label: 'Total Samples', icon: ICONS.infoDatabase, val: smp, help: 'The total number of individual audio samples in the file.' },
+          { label: 'Peak Level', icon: ICONS.infoPeakLevel, val: pk, help: 'The highest amplitude level reached in the audio signal.' },
+          { label: 'RMS Loudness', icon: ICONS.infoLoudness, val: rms, help: 'The root mean square, indicating the average perceived loudness.' }
         );
       } else if (s.advMeta === 'error') {
-        fields.push({ label: 'Analysis', icon: ICONS.infoPeakLevel, val: 'Failed to decode audio data' });
+        fields.push({ label: 'Analysis', icon: ICONS.infoPeakLevel, val: 'Failed to decode audio data', help: 'The advanced audio analysis failed to read the file.' });
       }
 
       infoContent.innerHTML = fields.map(f => `
@@ -1851,6 +1856,10 @@
           <div class="info-val-wrap">
             <span class="info-val" title="${escapeHTML(f.val)}">${escapeHTML(f.val)}</span>
           </div>
+          <button class="info-help-btn" aria-label="What is ${f.label}?">
+            ${ICONS.help}
+          </button>
+          <div class="info-tooltip">${f.help}</div>
           <button class="info-copy-btn" data-copy="${escapeHTML(f.val)}" aria-label="Copy ${f.label}">
             <span class="icon-copy">${ICONS.copy}</span>
             <span class="icon-check">${ICONS.check}</span>
@@ -1879,6 +1888,19 @@
     if (infoModal) {
       infoModal.addEventListener('click', async (e) => {
         if (e.target.matches('[data-close]')) closeInfoModal();
+        
+        const helpBtn = e.target.closest('.info-help-btn');
+        if (helpBtn) {
+          const tooltip = helpBtn.nextElementSibling;
+          if (tooltip && tooltip.classList.contains('info-tooltip')) {
+            const isShowing = tooltip.classList.contains('show');
+            document.querySelectorAll('.info-tooltip.show').forEach(el => el.classList.remove('show'));
+            if (!isShowing) tooltip.classList.add('show');
+          }
+        } else {
+          document.querySelectorAll('.info-tooltip.show').forEach(el => el.classList.remove('show'));
+        }
+
         const copyBtn = e.target.closest('.info-copy-btn');
         if (copyBtn && !copyBtn.classList.contains('copied')) {
           const text = copyBtn.dataset.copy;
