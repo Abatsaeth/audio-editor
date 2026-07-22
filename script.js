@@ -109,13 +109,22 @@
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>`,
-    infoWave: `
+    infoSampleRate: `
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M2 12h4l3-9 5 18 3-9h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="15" cy="21" r="1.5" fill="currentColor" stroke="none"/>
+        <circle cx="9" cy="3" r="1.5" fill="currentColor" stroke="none"/>
       </svg>`,
-    infoActivity: `
+    infoPeakLevel: `
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 20V8M18 20v-5M6 20v-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="9" y1="4" x2="15" y2="4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`,
+    infoLoudness: `
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>`,
     infoSliders: `
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -258,19 +267,27 @@
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const buffer = await ctx.decodeAudioData(e.target.result);
         let peak = 0;
+        let sumSquares = 0;
+        let totalSamples = 0;
         for (let c = 0; c < buffer.numberOfChannels; c++) {
           const data = buffer.getChannelData(c);
+          totalSamples += data.length;
           for (let i = 0; i < data.length; i++) {
-            const abs = Math.abs(data[i]);
+            const val = data[i];
+            const abs = Math.abs(val);
             if (abs > peak) peak = abs;
+            sumSquares += val * val;
           }
         }
+        const rms = Math.sqrt(sumSquares / totalSamples);
         resolve({
           sampleRate: buffer.sampleRate,
           channels: buffer.numberOfChannels,
           samples: buffer.length,
           peak: peak,
-          peakDB: peak > 0 ? 20 * Math.log10(peak) : -Infinity
+          peakDB: peak > 0 ? 20 * Math.log10(peak) : -Infinity,
+          rms: rms,
+          rmsDB: rms > 0 ? 20 * Math.log10(rms) : -Infinity
         });
       } catch (err) {
         resolve(null);
@@ -1805,24 +1822,27 @@
 
       if (s.advMeta === 'loading') {
         fields.push(
-          { label: 'Sample Rate', icon: ICONS.infoActivity, val: 'Analyzing...' },
+          { label: 'Sample Rate', icon: ICONS.infoSampleRate, val: 'Analyzing...' },
           { label: 'Channels', icon: ICONS.infoSliders, val: 'Analyzing...' },
           { label: 'Total Samples', icon: ICONS.infoDatabase, val: 'Analyzing...' },
-          { label: 'Peak Level', icon: ICONS.infoWave, val: 'Analyzing...' }
+          { label: 'Peak Level', icon: ICONS.infoPeakLevel, val: 'Analyzing...' },
+          { label: 'RMS Loudness', icon: ICONS.infoLoudness, val: 'Analyzing...' }
         );
       } else if (s.advMeta && s.advMeta !== 'error') {
         const sr = new Intl.NumberFormat().format(s.advMeta.sampleRate) + ' Hz';
         const ch = s.advMeta.channels === 1 ? '1 (Mono)' : s.advMeta.channels === 2 ? '2 (Stereo)' : `${s.advMeta.channels} Channels`;
         const smp = new Intl.NumberFormat().format(s.advMeta.samples);
         const pk = s.advMeta.peakDB === -Infinity ? '-∞ dB' : `${s.advMeta.peakDB.toFixed(2)} dB`;
+        const rms = s.advMeta.rmsDB === -Infinity ? '-∞ dB' : `${s.advMeta.rmsDB.toFixed(2)} dB`;
         fields.push(
-          { label: 'Sample Rate', icon: ICONS.infoActivity, val: sr },
+          { label: 'Sample Rate', icon: ICONS.infoSampleRate, val: sr },
           { label: 'Channels', icon: ICONS.infoSliders, val: ch },
           { label: 'Total Samples', icon: ICONS.infoDatabase, val: smp },
-          { label: 'Peak Level', icon: ICONS.infoWave, val: pk }
+          { label: 'Peak Level', icon: ICONS.infoPeakLevel, val: pk },
+          { label: 'RMS Loudness', icon: ICONS.infoLoudness, val: rms }
         );
       } else if (s.advMeta === 'error') {
-        fields.push({ label: 'Analysis', icon: ICONS.infoWave, val: 'Failed to decode audio data' });
+        fields.push({ label: 'Analysis', icon: ICONS.infoPeakLevel, val: 'Failed to decode audio data' });
       }
 
       infoContent.innerHTML = fields.map(f => `
