@@ -1802,6 +1802,7 @@ body.has-player .brand { opacity: 0.35; }
   font-weight: 600;
   margin-bottom: 0;
   letter-spacing: -0.01em;
+  line-height: 1;
 }
 
 .modal-title-sep {
@@ -1842,6 +1843,12 @@ body.has-player .brand { opacity: 0.35; }
 .info-content-wrap.is-dragging .custom-scrollbar.active {
   opacity: 1;
   pointer-events: auto;
+}
+
+#libraryScrollbar {
+  top: 64px;
+  bottom: 14px;
+  right: 4px;
 }
 
 #infoScrollbar {

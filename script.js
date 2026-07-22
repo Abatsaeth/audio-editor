@@ -116,9 +116,12 @@
       </svg>`,
     infoSampleRate: `
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="15" cy="21" r="1.5" fill="currentColor" stroke="none"/>
-        <circle cx="9" cy="3" r="1.5" fill="currentColor" stroke="none"/>
+        <path d="M3 12c3-4 6-4 9 0s6 4 9 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="3" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+        <circle cx="7.5" cy="9" r="1.5" fill="currentColor" stroke="none"/>
+        <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+        <circle cx="16.5" cy="15" r="1.5" fill="currentColor" stroke="none"/>
+        <circle cx="21" cy="12" r="1.5" fill="currentColor" stroke="none"/>
       </svg>`,
     infoPeakLevel: `
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
