@@ -1477,6 +1477,22 @@
       let duration = 0;
       let trackWidth = track.clientWidth;
       let lastPct = 0;
+      let showRemaining = false;
+      let lastCurrentTime = 0;
+
+      timesRow.style.cursor = 'pointer';
+      timesRow.title = 'Toggle remaining time';
+      timesRow.addEventListener('click', (e) => {
+        // Only if we have a valid duration
+        if (!duration) return;
+        tEnd.style.opacity = '0';
+        setTimeout(() => {
+          showRemaining = !showRemaining;
+          lastEndFmt = ''; // Force re-render of tEnd
+          update(lastCurrentTime, duration);
+          tEnd.style.opacity = ''; // CSS will transition opacity back
+        }, 180);
+      });
 
       const ro = new ResizeObserver((entries) => {
         for (let e of entries) {
@@ -1518,13 +1534,28 @@
 
       let lastDur = -1;
       let lastTimeFmt = '';
+      let lastEndFmt = '';
+
       function update(currentTime, dur) {
+        lastCurrentTime = currentTime;
         if (isFinite(dur) && dur > 0) duration = dur;
         if (duration !== lastDur) {
-          tEnd.textContent = fmt(duration);
           tStart.textContent = '0:00';
           lastDur = duration;
         }
+
+        let endFmt = '';
+        if (showRemaining) {
+          const rem = Math.max(0, duration - currentTime);
+          endFmt = '-' + fmt(rem);
+        } else {
+          endFmt = fmt(duration);
+        }
+        if (endFmt !== lastEndFmt) {
+          tEnd.textContent = endFmt;
+          lastEndFmt = endFmt;
+        }
+
         const timeFmt = fmt(currentTime);
         if (timeFmt !== lastTimeFmt) {
           label.textContent = timeFmt;
