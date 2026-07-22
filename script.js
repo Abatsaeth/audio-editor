@@ -147,6 +147,24 @@
         <path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>`,
+    infoZeroCross: `
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M2 12h20M4 12q2-8 6-8t6 16q4 0 6 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`,
+    infoDC: `
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M2 12h20M4 8h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`,
+    infoCorrelation: `
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="8" cy="12" r="5" stroke="currentColor" stroke-width="1.6"/>
+        <circle cx="16" cy="12" r="5" stroke="currentColor" stroke-width="1.6"/>
+      </svg>`,
+    infoCrest: `
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M2 20L12 4l10 16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M6 12h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`,
     infoSliders: `
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <line x1="4" y1="21" x2="4" y2="14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></line><line x1="4" y1="10" x2="4" y2="3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></line><line x1="12" y1="21" x2="12" y2="12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></line><line x1="12" y1="8" x2="12" y2="3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></line><line x1="20" y1="21" x2="20" y2="16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></line><line x1="20" y1="12" x2="20" y2="3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></line><line x1="1" y1="14" x2="7" y2="14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></line><line x1="9" y1="8" x2="15" y2="8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></line><line x1="17" y1="16" x2="23" y2="16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></line>
@@ -289,25 +307,58 @@
         let peak = 0;
         let sumSquares = 0;
         let totalSamples = 0;
+        let sumTotal = 0;
+        let zeroCrossings = 0;
+
         for (let c = 0; c < buffer.numberOfChannels; c++) {
           const data = buffer.getChannelData(c);
           totalSamples += data.length;
+          let lastSign = 0;
           for (let i = 0; i < data.length; i++) {
             const val = data[i];
             const abs = Math.abs(val);
             if (abs > peak) peak = abs;
             sumSquares += val * val;
+            sumTotal += val;
+            let sign = val > 0 ? 1 : (val < 0 ? -1 : 0);
+            if (lastSign !== 0 && sign !== 0 && sign !== lastSign) {
+              zeroCrossings++;
+            }
+            if (sign !== 0) lastSign = sign;
           }
         }
+
+        let correlation = null;
+        if (buffer.numberOfChannels === 2) {
+          const left = buffer.getChannelData(0);
+          const right = buffer.getChannelData(1);
+          let sumLR = 0, sumL2 = 0, sumR2 = 0;
+          for (let i = 0; i < left.length; i++) {
+            const l = left[i], r = right[i];
+            sumLR += l * r;
+            sumL2 += l * l;
+            sumR2 += r * r;
+          }
+          const denom = Math.sqrt(sumL2 * sumR2);
+          correlation = denom > 0 ? (sumLR / denom) : 0;
+        }
+
         const rms = Math.sqrt(sumSquares / totalSamples);
+        const peakDB = peak > 0 ? 20 * Math.log10(peak) : -Infinity;
+        const rmsDB = rms > 0 ? 20 * Math.log10(rms) : -Infinity;
+
         resolve({
           sampleRate: buffer.sampleRate,
           channels: buffer.numberOfChannels,
           samples: buffer.length,
           peak: peak,
-          peakDB: peak > 0 ? 20 * Math.log10(peak) : -Infinity,
+          peakDB: peakDB,
           rms: rms,
-          rmsDB: rms > 0 ? 20 * Math.log10(rms) : -Infinity
+          rmsDB: rmsDB,
+          dcOffset: sumTotal / totalSamples,
+          zeroCrossings: zeroCrossings,
+          correlation: correlation,
+          crestFactor: peak > 0 && rms > 0 ? peakDB - rmsDB : 0
         });
       } catch (err) {
         resolve(null);
@@ -1964,7 +2015,11 @@
           { label: 'Channels', icon: ICONS.infoSliders, val: 'Analyzing...', help: 'The number of independent audio channels (e.g., Mono, Stereo).' },
           { label: 'Total Samples', icon: ICONS.infoSamples, val: 'Analyzing...', help: 'The total number of individual audio samples in the file.' },
           { label: 'Peak Level', icon: ICONS.infoPeakLevel, val: 'Analyzing...', help: 'The highest amplitude level reached in the audio signal.' },
-          { label: 'RMS Loudness', icon: ICONS.infoLoudness, val: 'Analyzing...', help: 'The root mean square, indicating the average perceived loudness.' }
+          { label: 'RMS Loudness', icon: ICONS.infoLoudness, val: 'Analyzing...', help: 'The root mean square, indicating the average perceived loudness.' },
+          { label: 'Crest Factor', icon: ICONS.infoCrest, val: 'Analyzing...', help: 'The ratio of peak to RMS loudness, indicating dynamic range.' },
+          { label: 'DC Offset', icon: ICONS.infoDC, val: 'Analyzing...', help: 'The mean amplitude displacement from zero.' },
+          { label: 'Zero Crossings', icon: ICONS.infoZeroCross, val: 'Analyzing...', help: 'The number of times the waveform crosses the zero amplitude axis.' },
+          { label: 'Stereo Phase', icon: ICONS.infoCorrelation, val: 'Analyzing...', help: 'Correlation between left and right channels.' }
         );
       } else if (s.advMeta && s.advMeta !== 'error') {
         const sr = new Intl.NumberFormat().format(s.advMeta.sampleRate) + ' Hz';
@@ -1972,12 +2027,22 @@
         const smp = new Intl.NumberFormat().format(s.advMeta.samples);
         const pk = s.advMeta.peakDB === -Infinity ? '-∞ dB' : `${s.advMeta.peakDB.toFixed(2)} dB`;
         const rms = s.advMeta.rmsDB === -Infinity ? '-∞ dB' : `${s.advMeta.rmsDB.toFixed(2)} dB`;
+        
+        const crest = `${s.advMeta.crestFactor.toFixed(2)} dB`;
+        const dcOffset = (s.advMeta.dcOffset * 100).toFixed(4) + '%';
+        const zc = new Intl.NumberFormat().format(s.advMeta.zeroCrossings);
+        const corr = s.advMeta.correlation !== null ? s.advMeta.correlation.toFixed(3) : 'N/A (Mono)';
+
         fields.push(
           { label: 'Sample Rate', icon: ICONS.infoSampleRate, val: sr, help: 'The number of audio samples carried per second.' },
           { label: 'Channels', icon: ICONS.infoSliders, val: ch, help: 'The number of independent audio channels (e.g., Mono, Stereo).' },
           { label: 'Total Samples', icon: ICONS.infoSamples, val: smp, help: 'The total number of individual audio samples in the file.' },
           { label: 'Peak Level', icon: ICONS.infoPeakLevel, val: pk, help: 'The highest amplitude level reached in the audio signal.' },
-          { label: 'RMS Loudness', icon: ICONS.infoLoudness, val: rms, help: 'The root mean square, indicating the average perceived loudness.' }
+          { label: 'RMS Loudness', icon: ICONS.infoLoudness, val: rms, help: 'The root mean square, indicating the average perceived loudness.' },
+          { label: 'Crest Factor', icon: ICONS.infoCrest, val: crest, help: 'The ratio of peak to RMS loudness, indicating dynamic range.' },
+          { label: 'DC Offset', icon: ICONS.infoDC, val: dcOffset, help: 'The mean amplitude displacement from zero.' },
+          { label: 'Zero Crossings', icon: ICONS.infoZeroCross, val: zc, help: 'The number of times the waveform crosses the zero amplitude axis.' },
+          { label: 'Stereo Phase', icon: ICONS.infoCorrelation, val: corr, help: 'Correlation between left and right channels (1 = in phase, -1 = out of phase).' }
         );
       } else if (s.advMeta === 'error') {
         fields.push({ label: 'Analysis', icon: ICONS.infoPeakLevel, val: 'Failed to decode audio data', help: 'The advanced audio analysis failed to read the file.' });
@@ -2268,7 +2333,7 @@
       document.addEventListener('mouseover', (e) => {
         if (document.body.getAttribute('data-cursor') === 'grabbing') return;
         const t = e.target;
-        if (t.closest('button, a, [data-tip], .pc-btn, .sound-action, .sound-delete, .custom-scrollbar-thumb, .sound-thumb, .rail-sound, .pp-track, .pp-thumb')) {
+        if (t.closest('button, a, [data-tip], .pc-btn, .sound-action, .sound-delete, .custom-scrollbar-thumb, .sound-thumb, .rail-sound, .pp-track, .pp-thumb, .pp-time, .pp-times')) {
           document.body.setAttribute('data-cursor', 'pointer');
         } else if (t.closest('.sound-card')) {
           const card = t.closest('.sound-card');

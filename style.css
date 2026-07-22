@@ -1952,7 +1952,7 @@ body.has-player .brand { opacity: 0.35; }
 #infoScrollbar {
   top: 0;
   bottom: 0;
-  right: 6px;
+  right: 4px;
   top: 20px;
 }
 
@@ -1962,7 +1962,7 @@ body.has-player .brand { opacity: 0.35; }
   gap: 12px;
   font-size: 14px;
   color: var(--text-soft);
-  max-height: 60vh;
+  max-height: 300px;
   overflow-y: auto;
   padding-right: 0px;
   scrollbar-width: none;
@@ -1974,7 +1974,7 @@ body.has-player .brand { opacity: 0.35; }
 
 .info-content-wrap.has-scroll:hover .info-content,
 .info-content-wrap.has-scroll.is-dragging .info-content {
-  padding-right: 14px;
+  padding-right: 10px;
 }
 
 .info-row {
