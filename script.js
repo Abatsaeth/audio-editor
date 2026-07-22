@@ -2333,7 +2333,7 @@
       document.addEventListener('mouseover', (e) => {
         if (document.body.getAttribute('data-cursor') === 'grabbing') return;
         const t = e.target;
-        if (t.closest('button, a, [data-tip], .pc-btn, .sound-action, .sound-delete, .custom-scrollbar-thumb, .sound-thumb, .rail-sound, .pp-track, .pp-thumb, .pp-time, .pp-times')) {
+        if (t.closest('button, a, [data-tip], .pc-btn, .sound-action, .sound-delete, .custom-scrollbar-thumb, .sound-thumb, .rail-sound, .pp-track, .pp-thumb, .pp-time, .pp-times, .pp-thumb-label')) {
           document.body.setAttribute('data-cursor', 'pointer');
         } else if (t.closest('.sound-card')) {
           const card = t.closest('.sound-card');

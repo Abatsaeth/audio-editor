@@ -2061,6 +2061,7 @@ body.has-player .brand { opacity: 0.35; }
   z-index: 10;
 }
 
+.info-help-btn:hover ~ .info-tooltip,
 .info-tooltip.show {
   opacity: 1;
   visibility: visible;
