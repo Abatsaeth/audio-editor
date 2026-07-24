@@ -1282,7 +1282,13 @@ code {
   border: 1px solid var(--hairline);
   user-select: none;
   transition: transform var(--d-mid) var(--ease-out), background var(--d-mid) var(--ease-soft), border-color var(--d-mid) var(--ease-soft), box-shadow var(--d-mid) var(--ease-soft), opacity var(--d-mid) var(--ease-out);
-  overflow: visible;
+  overflow: visible
+}
+
+.sound-card.dragging,
+.sound-card.entering,
+.sound-card.holding,
+.sound-card.removing {
   will-change: transform
 }
 
@@ -2480,7 +2486,7 @@ body.has-player .brand {
   border: 1px solid var(--hairline);
   color: var(--text-soft);
   transition: background var(--d-mid) var(--ease-soft), border-color var(--d-mid) var(--ease-soft), color var(--d-mid) var(--ease-soft), transform var(--d-mid) var(--ease-soft), box-shadow var(--d-mid) var(--ease-soft);
-  will-change: transform, box-shadow, border-color, background, color;
+  will-change: transform;
   z-index: 3
 }
 
@@ -2582,7 +2588,7 @@ body.has-player .brand {
   border: 1px solid var(--hairline);
   color: var(--text-soft);
   transition: background var(--d-mid) var(--ease-soft), border-color var(--d-mid) var(--ease-soft), color var(--d-mid) var(--ease-soft), transform var(--d-mid) var(--ease-soft), box-shadow var(--d-mid) var(--ease-soft);
-  will-change: transform, box-shadow, border-color, background, color
+  will-change: transform
 }
 
 .info-copy-btn svg {
