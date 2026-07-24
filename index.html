@@ -1,307 +1,652 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AUDIO.TWEAK</title>
-  <meta name="theme-color" content="#FB2B41" />
-  <meta name="description" content="A fast, smooth, in-browser audio player. Drag & drop files, reorder, rename, search and shuffle your local audio library seamlessly." />
-  <meta property="og:image" content="https://abatsaeth.github.io/audio.tweak/icon.png" />
-  <meta name="twitter:image" content="https://abatsaeth.github.io/audio.tweak/icon.png" />
-  
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="AUDIO.TWEAK" />
-  <meta property="og:url" content="https://abatsaeth.github.io/audio.tweak/" />
-  <meta property="og:title" content="AUDIO.TWEAK" />
-  <meta property="og:description" content="A fast, smooth, in-browser audio player. Drag & drop files, reorder, rename, search and shuffle your local audio library seamlessly." />
-
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary" />
-  <meta property="twitter:domain" content="abatsaeth.github.io" />
-  <meta property="twitter:url" content="https://abatsaeth.github.io/audio.tweak/" />
-  <meta name="twitter:title" content="AUDIO.TWEAK" />
-  <meta name="twitter:description" content="A fast, smooth, in-browser audio player. Drag & drop files, reorder, rename, search and shuffle your local audio library seamlessly." />
-
-  <link rel="icon" type="image/svg+xml" href="./icon.svg" />
-  <link rel="stylesheet" href="./style.css" />
-  <link href="./fonts.css" rel="stylesheet">
-</head>
-<body>
-  <!-- Custom Cursor -->
-  <div class="cursor-wrap" id="cursorWrap" aria-hidden="true">
-    <div class="cursor-shape" id="cursorShape"></div>
-  </div>
-  <!-- Ambient drifting orbs (background atmosphere) -->
-  <div class="ambient" aria-hidden="true">
-    <span class="orb orb-a"></span>
-    <span class="orb orb-b"></span>
-    <span class="orb orb-c"></span>
-  </div>
-
-  <!-- ================================================================
-       COLLAPSED RAIL  (always visible)
-       ================================================================ -->
-  <nav class="rail" id="rail" aria-label="Quick access">
-    <button class="rail-logo" id="railLogo" aria-label="Open library">
-      <span class="rail-mark" id="railMark"></span>
-    </button>
-
-    <div class="rail-count" id="railCount">0</div>
-
-    <div class="rail-sep" aria-hidden="true"></div>
-
-    <ul class="rail-sounds" id="railSounds" aria-label="Your sounds"></ul>
-
-    <div class="rail-sep" aria-hidden="true"></div>
-
-    <button class="rail-add" id="railAdd" aria-label="Add sound">
-      <span id="railAddIcon"></span>
-    </button>
-  </nav>
-
-  <!-- ================================================================
-       SIDEBAR  (slides out from the rail on logo click)
-       ================================================================ -->
-  <aside class="sidebar" id="sidebar" aria-label="Sound library">
-    <div class="sidebar-inner">
-      <header class="sidebar-head">
-        <div class="head-left">
-          <div class="head-mark" id="headMark"></div>
-          <div class="head-text">
-            <div class="head-name">AUDIO.TWEAK</div>
-            <div class="head-sub">Your Audio Library</div>
-          </div>
-        </div>
-        <button class="head-close" id="headClose" aria-label="Close sidebar">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true">
-            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </header>
-
-      <div class="library">
-        <div class="library-meta">
-          <div class="searchbar-wrap" id="searchWrap">
-            <div class="searchbar-icon" id="searchIcon">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>AUDIO.TWEAK</title>
+    <meta name="theme-color" content="#FB2B41" />
+    <meta
+      name="description"
+      content="A fast, smooth, in-browser audio player. Drag & drop files, reorder, rename, search and shuffle your local audio library seamlessly."
+    />
+    <meta
+      property="og:image"
+      content="https://abatsaeth.github.io/audio.tweak/icon.png"
+    />
+    <meta
+      name="twitter:image"
+      content="https://abatsaeth.github.io/audio.tweak/icon.png"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AUDIO.TWEAK" />
+    <meta
+      property="og:url"
+      content="https://abatsaeth.github.io/audio.tweak/"
+    />
+    <meta property="og:title" content="AUDIO.TWEAK" />
+    <meta
+      property="og:description"
+      content="A fast, smooth, in-browser audio player. Drag & drop files, reorder, rename, search and shuffle your local audio library seamlessly."
+    />
+    <meta name="twitter:card" content="summary" />
+    <meta property="twitter:domain" content="abatsaeth.github.io" />
+    <meta
+      property="twitter:url"
+      content="https://abatsaeth.github.io/audio.tweak/"
+    />
+    <meta name="twitter:title" content="AUDIO.TWEAK" />
+    <meta
+      name="twitter:description"
+      content="A fast, smooth, in-browser audio player. Drag & drop files, reorder, rename, search and shuffle your local audio library seamlessly."
+    />
+    <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+    <link rel="stylesheet" href="./style.css" />
+    <link href="./fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="cursor-wrap" id="cursorWrap" aria-hidden="true">
+      <div class="cursor-shape" id="cursorShape"></div>
+    </div>
+    <div class="ambient" aria-hidden="true">
+      <span class="orb orb-a"></span> <span class="orb orb-b"></span>
+      <span class="orb orb-c"></span>
+    </div>
+    <nav class="rail" id="rail" aria-label="Quick access">
+      <button class="rail-logo" id="railLogo" aria-label="Open library">
+        <span class="rail-mark" id="railMark"></span>
+      </button>
+      <div class="rail-count" id="railCount">0</div>
+      <div class="rail-sep" aria-hidden="true"></div>
+      <ul class="rail-sounds" id="railSounds" aria-label="Your sounds"></ul>
+      <div class="rail-sep" aria-hidden="true"></div>
+      <button class="rail-add" id="railAdd" aria-label="Add sound">
+        <span id="railAddIcon"></span>
+      </button>
+    </nav>
+    <aside class="sidebar" id="sidebar" aria-label="Sound library">
+      <div class="sidebar-inner">
+        <header class="sidebar-head">
+          <div class="head-left">
+            <div class="head-mark" id="headMark"></div>
+            <div class="head-text">
+              <div class="head-name">AUDIO.TWEAK</div>
+              <div class="head-sub">Your Audio Library</div>
             </div>
-            <div class="searchbar-sep"></div>
-            <div class="searchbar-placeholder" id="searchPlaceholder">Search Here</div>
-            <input type="text" class="searchbar-input" id="searchInput" aria-label="Search" />
           </div>
-          <div class="meta-right">
-            <div class="meta-sort-group">
-              <div class="sort-wrap" id="sortWrap">
-                <div class="sort-control">
-                  <button class="sort-btn-main" id="orderBtnToggle" aria-label="Toggle order">
-                    <div class="icon-transition-wrap" id="orderBtnToggleIconWrap">
-                      <svg id="iconAsc" class="transition-icon active" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-                      <svg id="iconDesc" class="transition-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-                    </div>
-                  </button>
-                  <div class="sort-divider"></div>
-                  <button class="sort-btn-main" id="sortBtnMain" aria-label="Sort by">
-                    <div class="icon-transition-wrap" id="sortBtnMainIconWrap">
-                      <svg id="iconSortName" class="transition-icon active" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
-                      <svg id="iconSortType" class="transition-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v2"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><circle cx="3" cy="17" r="1.5" fill="currentColor" stroke="none"/><path d="M4 17v-3a4 4 0 0 1 8 0v3"/><circle cx="11" cy="17" r="1.5" fill="currentColor" stroke="none"/></svg>
-                      <svg id="iconSortSize" class="transition-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="12" x2="2" y2="12"></line><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path><line x1="6" y1="16" x2="6.01" y2="16"></line><line x1="10" y1="16" x2="10.01" y2="16"></line></svg>
-                      <svg id="iconSortDuration" class="transition-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                    </div>
-                  </button>
-                  <div class="sort-divider"></div>
-                  <button class="sort-btn-drop" id="sortBtnDrop" aria-label="Sort options">
-                    <div class="icon-transition-wrap" id="sortBtnDropIconWrap">
-                      <svg id="iconSortDown" class="transition-icon active" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                      <svg id="iconSortUp" class="transition-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
-                    </div>
-                  </button>
-                </div>
-                <div class="sort-menu" id="sortMenu" aria-hidden="true">
-                  <button class="sort-item active" data-sort="name">
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
-                    <div class="sort-item-sep"></div> A-Z
-                  </button>
-                  <button class="sort-item" data-sort="type">
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v2"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><circle cx="3" cy="17" r="1.5" fill="currentColor" stroke="none"/><path d="M4 17v-3a4 4 0 0 1 8 0v3"/><circle cx="11" cy="17" r="1.5" fill="currentColor" stroke="none"/></svg>
-                    <div class="sort-item-sep"></div> Format
-                  </button>
-                  <button class="sort-item" data-sort="size">
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="12" x2="2" y2="12"></line><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path><line x1="6" y1="16" x2="6.01" y2="16"></line><line x1="10" y1="16" x2="10.01" y2="16"></line></svg>
-                    <div class="sort-item-sep"></div> Size
-                  </button>
-                  <button class="sort-item" data-sort="duration">
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                    <div class="sort-item-sep"></div> Duration
-                  </button>
+          <button class="head-close" id="headClose" aria-label="Close sidebar">
+            <svg
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M6 6l12 12M18 6L6 18"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </header>
+        <div class="library">
+          <div class="library-meta">
+            <div class="searchbar-wrap" id="searchWrap">
+              <div class="searchbar-icon" id="searchIcon">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="14"
+                  height="14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+              </div>
+              <div class="searchbar-sep"></div>
+              <div class="searchbar-placeholder" id="searchPlaceholder">
+                Search Here
+              </div>
+              <input
+                type="text"
+                class="searchbar-input"
+                id="searchInput"
+                aria-label="Search"
+              />
+            </div>
+            <div class="meta-right">
+              <div class="meta-sort-group">
+                <div class="sort-wrap" id="sortWrap">
+                  <div class="sort-control">
+                    <button
+                      class="sort-btn-main"
+                      id="orderBtnToggle"
+                      aria-label="Toggle order"
+                    >
+                      <div
+                        class="icon-transition-wrap"
+                        id="orderBtnToggleIconWrap"
+                      >
+                        <svg
+                          id="iconAsc"
+                          class="transition-icon active"
+                          viewBox="0 0 24 24"
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M12 19V5M5 12l7-7 7 7" />
+                        </svg>
+                        <svg
+                          id="iconDesc"
+                          class="transition-icon"
+                          viewBox="0 0 24 24"
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M12 5v14M5 12l7 7 7-7" />
+                        </svg>
+                      </div>
+                    </button>
+                    <div class="sort-divider"></div>
+                    <button
+                      class="sort-btn-main"
+                      id="sortBtnMain"
+                      aria-label="Sort by"
+                    >
+                      <div
+                        class="icon-transition-wrap"
+                        id="sortBtnMainIconWrap"
+                      >
+                        <svg
+                          id="iconSortName"
+                          class="transition-icon active"
+                          viewBox="0 0 24 24"
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M4 7V4h16v3M9 20h6M12 4v16" />
+                        </svg>
+                        <svg
+                          id="iconSortType"
+                          class="transition-icon"
+                          viewBox="0 0 24 24"
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path
+                            d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v2"
+                          />
+                          <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                          <circle
+                            cx="3"
+                            cy="17"
+                            r="1.5"
+                            fill="currentColor"
+                            stroke="none"
+                          />
+                          <path d="M4 17v-3a4 4 0 0 1 8 0v3" />
+                          <circle
+                            cx="11"
+                            cy="17"
+                            r="1.5"
+                            fill="currentColor"
+                            stroke="none"
+                          />
+                        </svg>
+                        <svg
+                          id="iconSortSize"
+                          class="transition-icon"
+                          viewBox="0 0 24 24"
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <line x1="22" y1="12" x2="2" y2="12"></line>
+                          <path
+                            d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
+                          ></path>
+                          <line x1="6" y1="16" x2="6.01" y2="16"></line>
+                          <line x1="10" y1="16" x2="10.01" y2="16"></line>
+                        </svg>
+                        <svg
+                          id="iconSortDuration"
+                          class="transition-icon"
+                          viewBox="0 0 24 24"
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M12 6v6l4 2" />
+                        </svg>
+                      </div>
+                    </button>
+                    <div class="sort-divider"></div>
+                    <button
+                      class="sort-btn-drop"
+                      id="sortBtnDrop"
+                      aria-label="Sort options"
+                    >
+                      <div
+                        class="icon-transition-wrap"
+                        id="sortBtnDropIconWrap"
+                      >
+                        <svg
+                          id="iconSortDown"
+                          class="transition-icon active"
+                          viewBox="0 0 24 24"
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M6 9l6 6 6-6" />
+                        </svg>
+                        <svg
+                          id="iconSortUp"
+                          class="transition-icon"
+                          viewBox="0 0 24 24"
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M18 15l-6-6-6 6" />
+                        </svg>
+                      </div>
+                    </button>
+                  </div>
+                  <div class="sort-menu" id="sortMenu" aria-hidden="true">
+                    <button class="sort-item active" data-sort="name">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M4 7V4h16v3M9 20h6M12 4v16" />
+                      </svg>
+                      <div class="sort-item-sep"></div>
+                      A-Z
+                    </button>
+                    <button class="sort-item" data-sort="type">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v2"
+                        />
+                        <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                        <circle
+                          cx="3"
+                          cy="17"
+                          r="1.5"
+                          fill="currentColor"
+                          stroke="none"
+                        />
+                        <path d="M4 17v-3a4 4 0 0 1 8 0v3" />
+                        <circle
+                          cx="11"
+                          cy="17"
+                          r="1.5"
+                          fill="currentColor"
+                          stroke="none"
+                        />
+                      </svg>
+                      <div class="sort-item-sep"></div>
+                      Format
+                    </button>
+                    <button class="sort-item" data-sort="size">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <line x1="22" y1="12" x2="2" y2="12"></line>
+                        <path
+                          d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
+                        ></path>
+                        <line x1="6" y1="16" x2="6.01" y2="16"></line>
+                        <line x1="10" y1="16" x2="10.01" y2="16"></line>
+                      </svg>
+                      <div class="sort-item-sep"></div>
+                      Size
+                    </button>
+                    <button class="sort-item" data-sort="duration">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 6v6l4 2" />
+                      </svg>
+                      <div class="sort-item-sep"></div>
+                      Duration
+                    </button>
+                  </div>
                 </div>
               </div>
+              <span class="library-count" id="libraryCount">0</span>
             </div>
-            <span class="library-count" id="libraryCount">0</span>
+          </div>
+          <ul class="sound-list" id="soundList" aria-live="polite"></ul>
+          <div class="custom-scrollbar" id="libraryScrollbar">
+            <div
+              class="custom-scrollbar-thumb"
+              id="libraryScrollbarThumb"
+            ></div>
+          </div>
+          <div class="empty" id="emptyState">
+            <div class="empty-orb"></div>
+            <div class="empty-title">No sounds yet</div>
+            <div class="empty-sub">
+              Drop <code>.mp3</code>, <code>.ogg</code>, <code>.wav</code>,
+              <code>.flac</code> files anywhere — or click the plus below.
+            </div>
+          </div>
+          <div class="empty" id="searchEmptyState" style="display: none">
+            <div class="empty-title">No Files Found</div>
           </div>
         </div>
-
-        <ul class="sound-list" id="soundList" aria-live="polite"></ul>
-        <div class="custom-scrollbar" id="libraryScrollbar">
-          <div class="custom-scrollbar-thumb" id="libraryScrollbarThumb"></div>
+        <footer class="sidebar-foot">
+          <button class="add-button" id="addButton">
+            <span class="add-icon" id="addIcon"></span>
+            <span class="add-label" id="addLabel">Click to add</span>
+          </button>
+        </footer>
+      </div>
+    </aside>
+    <div class="blur-layer" id="blurLayer" aria-hidden="true"></div>
+    <div class="topbar" id="topbar" aria-hidden="true">
+      <div class="topbar-inner">
+        <div class="topbar-name" id="topbarName">
+          <span class="topbar-name-inner" id="topbarNameInner"></span>
         </div>
-
-        <div class="empty" id="emptyState">
-          <div class="empty-orb"></div>
-          <div class="empty-title">No sounds yet</div>
-          <div class="empty-sub">Drop <code>.mp3</code>, <code>.ogg</code>, <code>.wav</code>, <code>.flac</code> files anywhere — or click the plus below.</div>
-        </div>
-        <div class="empty" id="searchEmptyState" style="display: none;">
-          <div class="empty-title">No Files Found</div>
-        </div>
-      </div>
-
-      <footer class="sidebar-foot">
-        <button class="add-button" id="addButton">
-          <span class="add-icon" id="addIcon"></span>
-          <span class="add-label" id="addLabel">Click to add</span>
-        </button>
-      </footer>
-    </div>
-  </aside>
-
-  <!-- Smooth blur layer over the stage when sidebar is open. -->
-  <div class="blur-layer" id="blurLayer" aria-hidden="true"></div>
-
-  <!-- ================================================================
-       TOPBAR  (appears at the top when a sound is active)
-       ================================================================ -->
-  <div class="topbar" id="topbar" aria-hidden="true">
-    <div class="topbar-inner">
-      <div class="topbar-name" id="topbarName">
-        <span class="topbar-name-inner" id="topbarNameInner"></span>
-      </div>
-      <div class="topbar-sep" aria-hidden="true"></div>
-      <div class="topbar-meta">
-        <span class="topbar-pill" id="topbarType"></span>
-        <span class="topbar-dot" aria-hidden="true"></span>
-        <span class="topbar-text" id="topbarSize"></span>
-        <span class="topbar-dot" aria-hidden="true"></span>
-        <span class="topbar-text" id="topbarDuration"></span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ================================================================
-       MAIN STAGE
-       ================================================================ -->
-  <main class="stage" id="stage">
-    <header class="brand" id="brand">
-      <span class="brand-mark" id="brandMark"></span>
-      <span class="brand-name">AUDIO.TWEAK</span>
-    </header>
-
-    <section class="canvas">
-      <div class="canvas-glow"></div>
-    </section>
-  </main>
-
-  <!-- ================================================================
-       EDIT MODAL
-       ================================================================ -->
-  <div class="modal" id="editModal" aria-hidden="true">
-    <div class="modal-backdrop" data-close></div>
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="editTitle">
-      <div class="modal-glow"></div>
-      <div class="modal-header">
-        <h3 id="editTitle">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="color: var(--text-mute); display: block;">
-            <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="modal-title-sep"></span>
-          <span>Rename</span>
-        </h3>
-        <button class="modal-close-btn" data-close aria-label="Close">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true">
-            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
-      <div class="modal-body">
-        <input type="text" id="editInput" maxlength="60" placeholder="New name" />
-      </div>
-      <div class="modal-actions">
-        <button class="btn ghost" data-close>Cancel</button>
-        <button class="btn primary" id="editSave">Save</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ================================================================
-       INFO MODAL
-       ================================================================ -->
-  <div class="modal" id="infoModal" aria-hidden="true">
-    <div class="modal-backdrop" data-close></div>
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
-      <div class="modal-glow"></div>
-      <div class="modal-header">
-        <h3 id="infoTitle">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="color: var(--text-mute); display: block;">
-            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
-            <path d="M12 16v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <circle cx="12" cy="7.5" r="1.5" fill="currentColor"/>
-          </svg>
-          <span class="modal-title-sep"></span>
-          <span>Track Info</span>
-        </h3>
-        <button class="modal-close-btn" data-close aria-label="Close">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true">
-            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
-      <div class="info-content-wrap modal-body" id="infoContentWrap">
-        <div class="info-content" id="infoContent"></div>
-        <div class="custom-scrollbar" id="infoScrollbar">
-          <div class="custom-scrollbar-thumb" id="infoScrollbarThumb"></div>
+        <div class="topbar-sep" aria-hidden="true"></div>
+        <div class="topbar-meta">
+          <span class="topbar-pill" id="topbarType"></span>
+          <span class="topbar-dot" aria-hidden="true"></span>
+          <span class="topbar-text" id="topbarSize"></span>
+          <span class="topbar-dot" aria-hidden="true"></span>
+          <span class="topbar-text" id="topbarDuration"></span>
         </div>
       </div>
-      <div class="modal-actions">
-        <button class="btn primary" data-close>Close</button>
+    </div>
+    <main class="stage" id="stage">
+      <header class="brand" id="brand">
+        <span class="brand-mark" id="brandMark"></span>
+        <span class="brand-name">AUDIO.TWEAK</span>
+      </header>
+      <section class="canvas"><div class="canvas-glow"></div></section>
+    </main>
+    <div class="modal" id="editModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close></div>
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="editTitle"
+      >
+        <div class="modal-glow"></div>
+        <div class="modal-header">
+          <h3 id="editTitle">
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+              style="color: var(--text-mute); display: block"
+            >
+              <path
+                d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <span class="modal-title-sep"></span> <span>Rename</span>
+          </h3>
+          <button class="modal-close-btn" data-close aria-label="Close">
+            <svg
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M6 6l12 12M18 6L6 18"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="editInput"
+            maxlength="60"
+            placeholder="New name"
+          />
+        </div>
+        <div class="modal-actions">
+          <button class="btn ghost" data-close>Cancel</button>
+          <button class="btn primary" id="editSave">Save</button>
+        </div>
       </div>
     </div>
-  </div>
-
-  <!-- Toast notifications -->
-  <div class="toast-container" id="toastContainer" role="status" aria-live="polite"></div>
-
-  <!-- Full-page drop overlay -->
-  <div class="drop-overlay" id="dropOverlay" aria-hidden="true">
-    <div class="drop-pill"><span class="drop-dot"></span>Release to add</div>
-  </div>
-
-  <!-- Hidden file input (driven by buttons) -->
-  <input type="file" id="fileInput" accept=".mp3,.ogg,.wav,.flac,audio/mpeg,audio/ogg,audio/wav,audio/x-wav,audio/flac,audio/x-flac" multiple hidden />
-
-  <!-- Context Menu -->
-  <div class="context-menu" id="contextMenu" aria-hidden="true">
-    <button class="context-item" id="contextEdit">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
-      </svg>
-      <div class="context-item-sep"></div> Edit Name
-    </button>
-    <button class="context-item" id="contextInfo">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
-        <path d="M12 16v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="12" cy="7.5" r="1.5" fill="currentColor"/>
-      </svg>
-      <div class="context-item-sep"></div> Info
-    </button>
-    <button class="context-item context-danger" id="contextDelete">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/>
-      </svg>
-      <div class="context-item-sep"></div> Delete
-    </button>
-  </div>
-
-  <script src="./script.js" defer></script>
-</body>
+    <div class="modal" id="infoModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close></div>
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="infoTitle"
+      >
+        <div class="modal-glow"></div>
+        <div class="modal-header">
+          <h3 id="infoTitle">
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+              style="color: var(--text-mute); display: block"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="9"
+                stroke="currentColor"
+                stroke-width="1.8"
+              />
+              <path
+                d="M12 16v-4"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+              <circle cx="12" cy="7.5" r="1.5" fill="currentColor" />
+            </svg>
+            <span class="modal-title-sep"></span> <span>Track Info</span>
+          </h3>
+          <button class="modal-close-btn" data-close aria-label="Close">
+            <svg
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M6 6l12 12M18 6L6 18"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+        <div class="info-content-wrap modal-body" id="infoContentWrap">
+          <div class="info-content" id="infoContent"></div>
+          <div class="custom-scrollbar" id="infoScrollbar">
+            <div class="custom-scrollbar-thumb" id="infoScrollbarThumb"></div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn primary" data-close>Close</button>
+        </div>
+      </div>
+    </div>
+    <div
+      class="toast-container"
+      id="toastContainer"
+      role="status"
+      aria-live="polite"
+    ></div>
+    <div class="drop-overlay" id="dropOverlay" aria-hidden="true">
+      <div class="drop-pill"><span class="drop-dot"></span>Release to add</div>
+    </div>
+    <input
+      type="file"
+      id="fileInput"
+      accept=".mp3,.ogg,.wav,.flac,audio/mpeg,audio/ogg,audio/wav,audio/x-wav,audio/flac,audio/x-flac"
+      multiple="multiple"
+      hidden
+    />
+    <div class="context-menu" id="contextMenu" aria-hidden="true">
+      <button class="context-item" id="contextEdit">
+        <svg
+          viewBox="0 0 24 24"
+          width="14"
+          height="14"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"
+          />
+        </svg>
+        <div class="context-item-sep"></div>
+        Edit Name
+      </button>
+      <button class="context-item" id="contextInfo">
+        <svg
+          viewBox="0 0 24 24"
+          width="14"
+          height="14"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <circle
+            cx="12"
+            cy="12"
+            r="9"
+            stroke="currentColor"
+            stroke-width="1.8"
+          />
+          <path
+            d="M12 16v-4"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <circle cx="12" cy="7.5" r="1.5" fill="currentColor" />
+        </svg>
+        <div class="context-item-sep"></div>
+        Info
+      </button>
+      <button class="context-item context-danger" id="contextDelete">
+        <svg
+          viewBox="0 0 24 24"
+          width="14"
+          height="14"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"
+          />
+        </svg>
+        <div class="context-item-sep"></div>
+        Delete
+      </button>
+    </div>
+    <script src="./script.js" type="module"></script>
+  </body>
 </html>
